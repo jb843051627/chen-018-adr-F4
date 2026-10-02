@@ -202,6 +202,30 @@ CREATE TABLE IF NOT EXISTS t_adr_review_bill (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='评价结论逐级复核签认单';
 
+-- 签认签迹台账：落名只进不出，一笔签认/打回落一行；本口已落名数由它逐笔点出，不由人往栏里敲。
+-- 打回时此前各道攒下的署名整批退档（pile 置 1、落退档时刻），退回县初核重新起签的那批另起一批号，
+-- 退档那批与新补那批各归各堆，不摆进同一列里给人看。
+CREATE TABLE IF NOT EXISTS t_adr_review_sign (
+  id bigint NOT NULL COMMENT '主键',
+  bill_id bigint NOT NULL COMMENT '所属签认单(t_adr_review_bill.id)',
+  bill_no varchar(64) DEFAULT NULL COMMENT '签认单号(冗余留痕,单号日后改名也不碍查账)',
+  node_no int NOT NULL COMMENT '落在哪一道 0县初核 1市复核 2省审定',
+  batch_no int NOT NULL COMMENT '第几批(头一趟起签为1;打回退档后重新起签另起一批)',
+  action varchar(16) NOT NULL COMMENT '落笔情形 sign签认 reject打回',
+  signer varchar(64) DEFAULT NULL COMMENT '这一笔实际落名的人(办一次续一名,各笔各记,不许拿上一道的顶)',
+  note varchar(255) DEFAULT NULL COMMENT '这一笔随记(打回缘故等)',
+  pile int NOT NULL DEFAULT 0 COMMENT '档层 0现行 1退档(打回时整批沉下,不与新补的同列)',
+  archive_time datetime DEFAULT NULL COMMENT '整批退档那一刻(现行批为空)',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  KEY idx_sign_bill (bill_id, batch_no, pile)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='评价结论复核签认签迹台账';
+
 CREATE TABLE IF NOT EXISTS t_adr_signal_line (
   id bigint NOT NULL COMMENT '主键',
   rule_code varchar(64) DEFAULT NULL COMMENT '信号检出限值线代号',

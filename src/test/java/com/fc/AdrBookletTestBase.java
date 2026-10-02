@@ -7,6 +7,8 @@ import com.fc.v2.mapper.auto.TAdrCheckBookletMapper;
 import com.fc.v2.mapper.auto.TAdrCheckPeriodMapper;
 import com.fc.v2.mapper.auto.TAdrOrgArchMapper;
 import com.fc.v2.mapper.auto.TAdrReportRowMapper;
+import com.fc.v2.mapper.auto.TAdrReviewBillMapper;
+import com.fc.v2.mapper.auto.TAdrReviewSignMapper;
 import com.fc.v2.mapper.auto.TAdrTermCardMapper;
 import com.fc.v2.service.impl.AdrBookletServiceImpl;
 import org.apache.ibatis.session.SqlSession;
@@ -35,6 +37,8 @@ public abstract class AdrBookletTestBase {
     protected TAdrTermCardMapper termCardMapper;
     protected TAdrCaseFlowMapper caseFlowMapper;
     protected TAdrOrgArchMapper orgArchMapper;
+    protected TAdrReviewBillMapper reviewBillMapper;
+    protected TAdrReviewSignMapper reviewSignMapper;
 
     private final AtomicLong idSeq = new AtomicLong(1000);
 
@@ -64,6 +68,8 @@ public abstract class AdrBookletTestBase {
         factory.getConfiguration().addMapper(TAdrTermCardMapper.class);
         factory.getConfiguration().addMapper(TAdrCaseFlowMapper.class);
         factory.getConfiguration().addMapper(TAdrOrgArchMapper.class);
+        factory.getConfiguration().addMapper(TAdrReviewBillMapper.class);
+        factory.getConfiguration().addMapper(TAdrReviewSignMapper.class);
 
         SqlSession session = factory.openSession(true);
         this.rowMapper = session.getMapper(TAdrReportRowMapper.class);
@@ -72,6 +78,8 @@ public abstract class AdrBookletTestBase {
         this.termCardMapper = session.getMapper(TAdrTermCardMapper.class);
         this.caseFlowMapper = session.getMapper(TAdrCaseFlowMapper.class);
         this.orgArchMapper = session.getMapper(TAdrOrgArchMapper.class);
+        this.reviewBillMapper = session.getMapper(TAdrReviewBillMapper.class);
+        this.reviewSignMapper = session.getMapper(TAdrReviewSignMapper.class);
 
         this.service = new AdrBookletServiceImpl();
         inject("bookletMapper", this.bookletMapper);
