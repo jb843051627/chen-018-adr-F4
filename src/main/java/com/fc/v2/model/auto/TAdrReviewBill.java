@@ -36,7 +36,17 @@ public class TAdrReviewBill implements Serializable {
     @ApiModelProperty(value = "评价结论复核签认单号")
     private String billNo;
 
-    /** 当前所在道次 0..2（县核/市核/省定） */
+    /** 立单经手人：头一名，一旦落定跟着整张单走到底，往后再录多少回也轮不着他改人 */
+    @TableField("opener")
+    @ApiModelProperty(value = "立单经手人")
+    private String opener;
+
+    /** 本趟趟次 1起；省审定退档整批复签时加一 */
+    @TableField("round_no")
+    @ApiModelProperty(value = "本趟趟次 1起")
+    private Integer roundNo;
+
+    /** 当前所在道次 0..2（县核/市核/省定）；库里只作空位，当前道次由签迹点算 */
     @TableField("node_no")
     @ApiModelProperty(value = "当前所在道次 0..2（县核/市核/省定）")
     private Integer nodeNo;
@@ -107,6 +117,22 @@ public class TAdrReviewBill implements Serializable {
 
     public void setBillNo(String billNo) {
         this.billNo = billNo;
+    }
+
+    public String getOpener() {
+        return opener;
+    }
+
+    public void setOpener(String opener) {
+        this.opener = opener;
+    }
+
+    public Integer getRoundNo() {
+        return roundNo;
+    }
+
+    public void setRoundNo(Integer roundNo) {
+        this.roundNo = roundNo;
     }
 
     public Integer getNodeNo() {

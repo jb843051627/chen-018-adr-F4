@@ -188,10 +188,12 @@ CREATE TABLE IF NOT EXISTS t_adr_check_period (
 CREATE TABLE IF NOT EXISTS t_adr_review_bill (
   id bigint NOT NULL COMMENT '主键',
   bill_no varchar(64) DEFAULT NULL COMMENT '评价结论复核签认单号',
-  node_no int DEFAULT NULL COMMENT '当前所在道次 0..2（县核/市核/省定）',
-  sign_mode int DEFAULT NULL COMMENT '同口并署办法 0任一人 1两名点齐',
+  opener varchar(64) DEFAULT NULL COMMENT '立单经手人(头一名,落定即跟单走到底,不许换人)',
+  round_no int NOT NULL DEFAULT 1 COMMENT '本趟趟次 1起(省审定退档整批复签加一)',
+  node_no int DEFAULT NULL COMMENT '当前所在道次 0..2（县核/市核/省定；库里留空,由签迹点算）',
+  sign_mode int DEFAULT NULL COMMENT '本口并署办法 0任一人 1两名点齐(本口头一笔落笔定死)',
   need_count int DEFAULT NULL COMMENT '本口应落名数',
-  sign_count int DEFAULT NULL COMMENT '本口已落名数',
+  sign_count int DEFAULT NULL COMMENT '本口已落名数(不作凭,以签迹点算交回为准)',
   status int DEFAULT NULL COMMENT '报批情形 0在核 1已核讫 2已打回',
   del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
   create_by varchar(64) DEFAULT NULL COMMENT '创建者',
@@ -199,8 +201,31 @@ CREATE TABLE IF NOT EXISTS t_adr_review_bill (
   update_by varchar(64) DEFAULT NULL COMMENT '更新者',
   update_time datetime DEFAULT NULL COMMENT '更新时间',
   remark varchar(500) DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_review_bill_no (bill_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='评价结论逐级复核签认单';
+
+-- 签迹：一笔一道口里落下的一个名；已落名数只顺着这张表点，屏上与心里记的都不作凭。
+-- 省审定退档时此前各道在册签迹整批置 del_flag=1 沉底，与新趟补的各归各堆，不并列给人看。
+CREATE TABLE IF NOT EXISTS t_adr_review_sign (
+  id bigint NOT NULL COMMENT '主键',
+  bill_no varchar(64) NOT NULL COMMENT '签认单号',
+  round_no int NOT NULL DEFAULT 1 COMMENT '趟次 1起(退档复签加一;退档批与新补批靠它分堆)',
+  node_no int NOT NULL COMMENT '道次 0县初核 1市复核 2省审定',
+  sign_mode int NOT NULL COMMENT '本口并署办法 0任一人即过 1两名点齐(落笔定死)',
+  signer varchar(64) DEFAULT NULL COMMENT '落名的人(签认/打回必具名;旧签名退档无经手人时留空;不覆立单经手人那栏)',
+  action_kind int NOT NULL DEFAULT 0 COMMENT '落名口 0签认 1打回',
+  comment varchar(500) DEFAULT NULL COMMENT '签认附言(打回缘由也落这里)',
+  del_flag int NOT NULL DEFAULT 0 COMMENT '删除标记 0在册 1退档沉底(一句不毁,只不与新补并列)',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  KEY idx_review_sign_bill (bill_no, round_no, del_flag),
+  KEY idx_review_sign_node (bill_no, round_no, node_no, del_flag)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='评价结论签认单签迹';
 
 CREATE TABLE IF NOT EXISTS t_adr_signal_line (
   id bigint NOT NULL COMMENT '主键',

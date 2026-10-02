@@ -1,5 +1,7 @@
 -- H2（MODE=MySQL）下的对照册领域测试库；列与 doc/schema/adr.sql 对齐。
 DROP TABLE IF EXISTS t_adr_report_row;
+DROP TABLE IF EXISTS t_adr_review_sign;
+DROP TABLE IF EXISTS t_adr_review_bill;
 DROP TABLE IF EXISTS t_sys_notice_user;
 DROP TABLE IF EXISTS t_sys_notice;
 DROP TABLE IF EXISTS t_sys_user;
@@ -198,6 +200,44 @@ CREATE TABLE t_adr_report_row (
   CONSTRAINT uk_booklet_row UNIQUE (booklet_id, row_no)
 );
 CREATE INDEX idx_code_phase ON t_adr_report_row (item_code, archive_phase, del_flag);
+
+CREATE TABLE t_adr_review_bill (
+  id bigint PRIMARY KEY,
+  bill_no varchar(64),
+  opener varchar(64),
+  round_no int NOT NULL DEFAULT 1,
+  node_no int,
+  sign_mode int,
+  need_count int,
+  sign_count int,
+  status int,
+  del_flag int DEFAULT 0,
+  create_by varchar(64),
+  create_time datetime,
+  update_by varchar(64),
+  update_time datetime,
+  remark varchar(500),
+  CONSTRAINT uk_review_bill_no UNIQUE (bill_no)
+);
+
+CREATE TABLE t_adr_review_sign (
+  id bigint PRIMARY KEY,
+  bill_no varchar(64) NOT NULL,
+  round_no int NOT NULL DEFAULT 1,
+  node_no int NOT NULL,
+  sign_mode int NOT NULL,
+  signer varchar(64),
+  action_kind int NOT NULL DEFAULT 0,
+  comment varchar(500),
+  del_flag int NOT NULL DEFAULT 0,
+  create_by varchar(64),
+  create_time datetime,
+  update_by varchar(64),
+  update_time datetime,
+  remark varchar(500)
+);
+CREATE INDEX idx_review_sign_bill ON t_adr_review_sign (bill_no, round_no, del_flag);
+CREATE INDEX idx_review_sign_node ON t_adr_review_sign (bill_no, round_no, node_no, del_flag);
 
 -- 站内消息通道测试用：用户/公告/公告用户挂接
 CREATE TABLE t_sys_user (
